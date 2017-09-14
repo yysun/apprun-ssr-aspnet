@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                    <li><a href="#/About">About</a></li>
+                    <li><a href="#/Contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="container body-content" id="my-app">
+        @RenderBody()
+    </div>
+
+    <div class="container">
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+        </footer>
+    </div>
+        
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+
+    <script src="https://unpkg.com/apprun@latest/dist/apprun-html.js"></script>
+    
+    <script>
+
+        const get = async url => new Promise((resolve, reject) => {
+            $.get(url)
+                .then(d => resolve(d))
+                .fail(e => reject(e))
+        })
+
+        const element = document.getElementById('my-app');
+
+        // initialize virtual dom
+        const state = element.innerHTML.trim();
+        element.innerHTML = '';
+
+        const view = (state) => state;
+
+        const update = {
+            '#': async (state, action) => {
+                let html = action
+                    ? await get(`/Home/${action}`)
+                    : state;
+                return html.trim();
+            }
+        };
+
+        app.start(element, state, view, update);
+
+    </script>
+
+</body>
+</html>
