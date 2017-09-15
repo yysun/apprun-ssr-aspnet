@@ -46,6 +46,7 @@
     <script src="https://unpkg.com/apprun@latest/dist/apprun-html.js"></script>
     
     <script>
+        app.on('//', (...p) => console.log(p));
 
         const get = async url => new Promise((resolve, reject) => {
             $.get(url)
@@ -66,7 +67,8 @@
                 let html = action
                     ? await get(`/Home/${action}`)
                     : state;
-                return html.trim();
+                html = html.trim();
+                return html[0] === '{' ? JSON.parse(html) : html;
             }
         };
 
