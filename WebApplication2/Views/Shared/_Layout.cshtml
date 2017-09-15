@@ -21,8 +21,8 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li><a href="#/About">About</a></li>
-                    <li><a href="#/Contact">Contact</a></li>
+                    <li><a href="#/Home/About">About</a></li>
+                    <li><a href="#/Home/Contact">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -46,7 +46,7 @@
     <script src="https://unpkg.com/apprun@latest/dist/apprun-html.js"></script>
     
     <script>
-        app.on('//', (...p) => console.log(p));
+        app.on('//', (...p) => { });
 
         const get = async url => new Promise((resolve, reject) => {
             $.get(url)
@@ -63,9 +63,9 @@
         const view = (state) => state;
 
         const update = {
-            '#': async (state, action) => {
-                let html = action
-                    ? await get(`/Home/${action}`)
+            '#': async (state, ...p) => {
+                let html = p.length
+                    ? await get(`/${p.join('/')}`)
                     : state;
                 html = html.trim();
                 return html[0] === '{' ? JSON.parse(html) : html;
