@@ -15,7 +15,14 @@ namespace WebApplication2
     public class VirtualDomAttribute : FilterAttribute, IResultFilter
     {
         StringWriter textWriter;
-        TextWriter originalWriter; 
+        TextWriter originalWriter;
+        string elementId;
+
+        public VirtualDomAttribute(string elementId = null)
+        {
+            this.elementId = elementId;
+        }
+
         public void OnResultExecuting(ResultExecutingContext filterContext)
         {
             originalWriter = filterContext.HttpContext.Response.Output;
@@ -28,7 +35,14 @@ namespace WebApplication2
             var capturedText = textWriter.ToString();
             var doc = new HtmlDocument();
             doc.LoadHtml(capturedText);
-            var vdom = RemoveWhiteSpace(Convert(doc.DocumentNode).ToString());
+            var root = String.IsNullOrWhiteSpace(this.elementId) ?
+                doc.DocumentNode : doc.GetElementbyId(this.elementId);
+            if (root == null) root = doc.DocumentNode;
+#if DEBUG
+            var vdom = RemoveWhiteSpace(Convert(root).ToString());
+#else
+            var vdom = RemoveWhiteSpace(Convert(root).ToString(Formatting.None));
+#endif
             filterContext.HttpContext.Response.Output = originalWriter;
             filterContext.HttpContext.Response.Write(vdom);
         }

@@ -13,7 +13,7 @@ namespace WebApplication2.Controllers
             return View();
         }
 
-        [VirtualDom]
+        [VirtualDom("my-app")]
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
@@ -21,6 +21,7 @@ namespace WebApplication2.Controllers
             return View();
         }
 
+        [VirtualDom]
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
