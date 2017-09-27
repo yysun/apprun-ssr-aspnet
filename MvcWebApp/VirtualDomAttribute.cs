@@ -72,23 +72,15 @@ namespace WebApplication2
                     if (ch != null) children.Add(ch);
                 }
             }
-
+            var vdom = JObject.FromObject(new
+            {
+                tag = documentNode.Name,
+                children = children
+            });
             var props = documentNode.Attributes.Select(attr => new JObject(
                 new JProperty(attr.Name, attr.Value))).ToArray();
-
-            return props.Length > 0 ?
-                JObject.FromObject(new
-                {
-                    tag = documentNode.Name,
-                    props = props,
-                    children = children
-                })
-                :
-                JObject.FromObject(new
-                {
-                    tag = documentNode.Name,
-                    children = children
-                });
+            if (props.Length > 0) vdom.Add("props", new JArray(props));
+            return vdom;              
         }
     }
     
