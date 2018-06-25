@@ -8,12 +8,13 @@ namespace WebApplication2.Controllers
 {
     public class HomeController : Controller
     {
+        [VirtualDom]
         public ActionResult Index()
         {
             return View();
         }
 
-        [VirtualDom("my-app")]
+        [VirtualDom]
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";

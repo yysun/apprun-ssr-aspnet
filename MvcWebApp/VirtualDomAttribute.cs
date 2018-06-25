@@ -16,15 +16,17 @@ namespace WebApplication2
     {
         StringWriter textWriter;
         TextWriter originalWriter;
-        string elementId;
+        bool isSSR;
 
-        public VirtualDomAttribute(string elementId = null)
+        public VirtualDomAttribute()
         {
-            this.elementId = elementId;
+            
         }
 
         public void OnResultExecuting(ResultExecutingContext filterContext)
         {
+            var accept = filterContext.HttpContext.Request.Headers["accept"];
+            this.isSSR = accept.IndexOf("application/json") < 0;
             originalWriter = filterContext.HttpContext.Response.Output;
             textWriter = new StringWriter(CultureInfo.InvariantCulture);
             filterContext.HttpContext.Response.Output = textWriter;
@@ -33,16 +35,14 @@ namespace WebApplication2
         public void OnResultExecuted(ResultExecutedContext filterContext)
         {
             var capturedText = textWriter.ToString();
-            var doc = new HtmlDocument();
-            doc.LoadHtml(capturedText);
-            var root = String.IsNullOrWhiteSpace(this.elementId) ?
-                doc.DocumentNode : doc.GetElementbyId(this.elementId);
-            if (root == null) root = doc.DocumentNode;
-#if DEBUG
-            var vdom = RemoveWhiteSpace(Convert(root).ToString());
-#else
-            var vdom = RemoveWhiteSpace(Convert(root).ToString(Formatting.None));
-#endif
+            var vdom = capturedText;
+            if (!this.isSSR)
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(capturedText);
+                var root = doc.DocumentNode.SelectSingleNode("/div");
+                vdom = RemoveWhiteSpace(Convert(root).GetValue("children").ToString(Formatting.None));
+            }
             filterContext.HttpContext.Response.Output = originalWriter;
             filterContext.HttpContext.Response.Write(vdom);
         }
@@ -63,7 +63,7 @@ namespace WebApplication2
                 {
                     if (RemoveWhiteSpace(child.InnerText).Length > 0)
                     {
-                        children.Add(new JValue(child.InnerText));
+                        children.Add(new JValue(HtmlEntity.DeEntitize(child.InnerText)));
                     }
                 }
                 else
@@ -77,9 +77,14 @@ namespace WebApplication2
                 tag = documentNode.Name,
                 children = children
             });
-            var props = documentNode.Attributes.Select(attr => new JObject(
-                new JProperty(attr.Name, attr.Value))).ToArray();
-            if (props.Length > 0) vdom.Add("props", new JArray(props));
+            var props = JObject.FromObject(new {});
+            documentNode.Attributes.ToList().ForEach(attr =>
+            {
+                var name = attr.Name;
+                if (name == "class") name = "className";
+                props.Add(name, attr.Value);
+            });
+            if(props.HasValues) vdom.Add("props", props);
             return vdom;              
         }
     }

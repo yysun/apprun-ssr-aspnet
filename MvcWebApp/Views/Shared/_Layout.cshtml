@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var isSSR = HttpContext.Current.Request.Headers["accept"].IndexOf("application/json") < 0;
+}
+@if (isSSR) {
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -21,8 +25,8 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li><a href="#/Home/About">About</a></li>
-                    <li><a href="#/Home/Contact">Contact</a></li>
+                    <li><a href="/Home/About">About</a></li>
+                    <li><a href="/Home/Contact">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -38,43 +42,47 @@
             <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
         </footer>
     </div>
-        
+
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
 
     <script src="https://unpkg.com/apprun@latest/dist/apprun-html.js"></script>
-    
-    <script>
-        app.on('//', (...p) => { });
 
-        const get = async url => new Promise((resolve, reject) => {
-            $.get(url)
+    <script>
+        $.ajaxSetup({ cache: false });
+        const get = url => new Promise((resolve, reject) => {
+            $.getJSON(url)
                 .then(d => resolve(d))
                 .fail(e => reject(e))
         })
 
-        const element = document.getElementById('my-app');
+        window.addEventListener('popstate', (e) => {
+            const path = document.location.pathname;
+            app.run('/', path);
+        });
 
-        // initialize virtual dom
-        const state = element.innerHTML.trim();
-        element.innerHTML = '';
+        $('.navbar-nav li a').on('click', function (event) {
+            event.preventDefault();
+            $('.navbar-nav li a').removeClass('active');
+            const menu = $(this).addClass('active')[0];
+            history.pushState(null, '', menu.href);
+            app.run('/', menu.pathname);
+        });
 
         const view = (state) => state;
 
         const update = {
-            '#': async (state, ...p) => {
-                let html = p.length
-                    ? await get(`/${p.join('/')}`)
-                    : state;
-                html = html.trim();
-                return html[0] === '{' ? JSON.parse(html) : html;
+            '/': async (_, path) => {
+                const json = await get(path);
+                return json;
             }
         };
 
-        app.start(element, state, view, update);
-
+        app.start('my-app', null, view, update);
     </script>
-
 </body>
 </html>
+} else {
+<div>@RenderBody()</div>
+}
