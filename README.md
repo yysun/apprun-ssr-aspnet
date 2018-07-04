@@ -1,8 +1,8 @@
-# AppRun - SSR for ASP.NET MVC
+# Make ASP.NET MVC App into SPA
 
-This project demonstrates the [AppRun](https://github.com/yysun/apprun) virtual DOM filter for ASP.NET MVC applications.
+This project demonstrates the virtual DOM filter for ASP.NET MVC applications.
 
-The virtual DOM filter does the content negotiation to output HTML or the Virtual DOM. The client-side AppRun application alters the menu links and switches the application into the SPA mode.
+The virtual DOM filter does the content negotiation to output HTML or the Virtual DOM. The client-side [AppRun](https://github.com/yysun/apprun) application alters the menu links and switches the application into the SPA mode.
 
 ```C#
 [VirtualDom]
