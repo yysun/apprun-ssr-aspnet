@@ -1,8 +1,4 @@
-﻿@{
-    var isSSR = HttpContext.Current.Request.Headers["accept"].IndexOf("application/json") < 0;
-}
-@if (isSSR) {
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -32,7 +28,7 @@
         </div>
     </div>
 
-    <div class="container body-content" id="my-app">
+    <div class="container body-content" id="apprun-app">
         @RenderBody()
     </div>
 
@@ -83,6 +79,3 @@
     </script>
 </body>
 </html>
-} else {
-<div>@RenderBody()</div>
-}
